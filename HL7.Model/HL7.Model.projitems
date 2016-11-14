@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>76057b9d-dc8a-41d1-a3a6-4605675772d0</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>HL7.Model</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CompareUsing.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Component.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Constants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Field.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Message.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MessageExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Segment.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SegmentExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Separators.cs" />
+  </ItemGroup>
+</Project>

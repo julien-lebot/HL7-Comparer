@@ -1,0 +1,183 @@
+﻿<controls:MetroWindow x:Class="HL7Comparer.MainWindow"
+        x:Name="Root"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:HL7Comparer"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+        mc:Ignorable="d"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        Background="{DynamicResource MaterialDesignPaper}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal" 
+        TextOptions.TextRenderingMode="Auto"  
+        BorderBrush="{DynamicResource AccentColorBrush}"
+        BorderThickness="1"
+        FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto"
+        local:ViewModelInjector.AutoInjectViewModel="True"
+        Title="HL7 Comparer v1.0" Height="1080" Width="1920">
+    <Window.Resources>
+        <local:SourceChangedConverter x:Key="SourceChangedConverter"></local:SourceChangedConverter>
+    </Window.Resources>
+    <materialDesign:DialogHost Identifier="RootDialog" SnackbarMessageQueue="{Binding ElementName=MainSnackbar, Path=MessageQueue}">
+        <DockPanel>
+            <ToolBarTray DockPanel.Dock="Top" Background="{DynamicResource PrimaryHueMidBrush}">
+                <ToolBarTray.Resources>
+                    <Style x:Key="{x:Static ToolBar.ButtonStyleKey}" TargetType="Button">
+                        <Setter Property="Padding" Value="16"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        <Setter Property="TextBlock.FontWeight" Value="DemiBold"/>
+                        <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidForegroundBrush}"/>
+                        <Setter Property="materialDesign:RippleAssist.IsCentered" Value="True"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <materialDesign:Ripple Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Focusable="False"
+                                Feedback="{TemplateBinding Foreground}"
+                                ClipToBounds="False"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Padding="{TemplateBinding Padding}" 
+                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsEnabled" Value="false">
+                                            <Setter Property="Opacity" Value=".56"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+
+                    <Style x:Key="{x:Static ToolBar.SeparatorStyleKey}" TargetType="Separator">
+                        <Setter Property="Background" Value="{DynamicResource PrimaryHueLightBrush}"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueLightBrush}"/>
+                        <Setter Property="MinHeight" Value="1"/>
+                        <Setter Property="SnapsToDevicePixels" Value="true"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Separator}">
+                                    <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" />
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+
+                    <Style x:Key="{x:Static ToolBar.CheckBoxStyleKey}" TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignAccentCheckBox}">
+                        <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidForegroundBrush}" />
+                        <Setter Property="VerticalAlignment" Value="Center" />
+                        <Setter Property="Margin" Value="8 0" />
+                    </Style>
+                </ToolBarTray.Resources>
+
+                <ToolBar Style="{DynamicResource MaterialDesignToolBar}" Background="{DynamicResource PrimaryHueMidBrush}">
+                    <Button Command="Undo" ToolTip="Undo" ToolBar.OverflowMode="AsNeeded">
+                        <materialDesign:PackIcon Kind="Undo" />
+                    </Button>
+                    <Button Command="Redo" ToolTip="Redo" ToolBar.OverflowMode="AsNeeded">
+                        <materialDesign:PackIcon Kind="Redo" />
+                    </Button>
+                    <Separator />
+                    <Button Command="Cut" ToolTip="Cut" ToolBar.OverflowMode="AsNeeded">
+                        <materialDesign:PackIcon Kind="ContentCut" />
+                    </Button>
+                    <Button Command="Copy" ToolTip="Copy" ToolBar.OverflowMode="AsNeeded">
+                        <materialDesign:PackIcon Kind="ContentCopy" />
+                    </Button>
+                    <Button Command="Paste" ToolTip="Paste" ToolBar.OverflowMode="AsNeeded">
+                        <materialDesign:PackIcon Kind="ContentPaste" />
+                    </Button>
+                    <Separator />
+                    <CheckBox
+                    x:Name="DisplayLineNumber"
+                    IsChecked="{Binding DisplayLineNumber, Mode=TwoWay}">Display line number</CheckBox>
+                    <Separator />
+                    <Button Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}">
+                        <Button.CommandParameter>
+                            <local:SimpleListEditor Title="IDS TO IGNORE"
+                                                    ItemsSource="{Binding IdsToIgnore}"
+                                                    SaveCommand="{Binding SaveIdsCommand}"
+                                                    DiscardCommand="{Binding DiscardIdsChangesCommand}"
+                                                    AddItemCommand="{Binding AddItemCommand}"
+                                                    DeleteItemCommand="{Binding DeleteIdCommand}">
+                                <local:SimpleListEditor.ItemTemplate>
+                                    <DataTemplate DataType="local:StringViewModel">
+                                        <TextBox Text="{Binding Value, Mode=TwoWay}"></TextBox>
+                                    </DataTemplate>
+                                </local:SimpleListEditor.ItemTemplate>
+                            </local:SimpleListEditor>
+                        </Button.CommandParameter>
+                        Edit Ids to ignore
+                    </Button>
+                </ToolBar>
+            </ToolBarTray>
+
+            <Grid>
+                <Grid>
+                    <Grid.Resources>
+                        <DataTemplate x:Key="SegmentTemplate" DataType="local:Hl7GroupedComponentsViewModel">
+                            <StackPanel>
+                                <materialDesign:ColorZone materialDesign:ShadowAssist.ShadowDepth="Depth2"
+                                            Mode="PrimaryMid">
+                                    <TextBlock FontSize="16" Text="{Binding SegmentName}" Margin="5,2"></TextBlock>
+                                </materialDesign:ColorZone>
+                                <ItemsControl ItemsSource="{Binding Components}" Margin="5">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="local:Hl7ComponentViewModel">
+                                            <StackPanel Margin="8 0 0 0" Orientation="Horizontal">
+                                                <TextBlock Text="{Binding Id}" FontWeight="Bold"></TextBlock>
+                                                <TextBlock Text="{Binding Value}" Padding="5,0"></TextBlock>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </DataTemplate>
+                    </Grid.Resources>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+
+                    <local:HL7Editor 
+                        DataContext="{Binding LeftHL7Editor}"
+                        Grid.Column="0" Grid.Row="0" Header="{Binding IsModified, Converter={StaticResource SourceChangedConverter}, ConverterParameter=Source}" Margin="16"
+                        Document="{Binding Document}"
+                        ShowLineNumbers="{Binding IsChecked, ElementName=DisplayLineNumber}"
+                        TextMarkerType="Rectangle"
+                        MarkerStrokeColor="{DynamicResource PrimaryHueMidBrush}"/>
+
+                    <local:HL7Editor 
+                        DataContext="{Binding RightHL7Editor}"
+                        Grid.Column="1" Grid.Row="0" Header="{Binding IsModified, Converter={StaticResource SourceChangedConverter}, ConverterParameter=Destination}" Margin="16"
+                        Document="{Binding Document}"
+                        ShowLineNumbers="{Binding IsChecked, ElementName=DisplayLineNumber}"
+                        TextMarkerType="Rectangle"
+                        MarkerStrokeColor="{DynamicResource PrimaryHueMidBrush}"/>
+
+                    <GroupBox Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Header="{Binding DifferencesCount}" HeaderStringFormat="Differences found: {0}" Margin="16">
+                        <ScrollViewer>
+                            <TextBox Background="Transparent"
+                                     BorderThickness="0"
+                                     IsReadOnly="True"
+                                     Style="{x:Null}"
+                                     Text="{Binding DifferencesAsText, Mode=OneWay}" TextWrapping="Wrap"></TextBox>
+                        </ScrollViewer>
+                    </GroupBox>
+
+                </Grid>
+                <materialDesign:Snackbar MessageQueue="{materialDesign:MessageQueue}" x:Name="MainSnackbar" />
+            </Grid>
+
+        </DockPanel>
+    </materialDesign:DialogHost>
+</controls:MetroWindow>
+
