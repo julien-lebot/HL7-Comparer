@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace HL7Comparer
 {
-    public static class Extensions
+    public static class HelperExtensions
     {
         public static TR Transform<T1, T2, TR>(this Tuple<IEnumerable<T1>, IEnumerable<T2>> source, Func<IEnumerable<T1>, IEnumerable<T2>, TR> fn)
         {

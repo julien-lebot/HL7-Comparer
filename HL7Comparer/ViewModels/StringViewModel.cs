@@ -1,6 +1,6 @@
 using ReactiveUI;
 
-namespace HL7Comparer
+namespace HL7Comparer.ViewModels
 {
     public class StringViewModel : ReactiveObject
     {

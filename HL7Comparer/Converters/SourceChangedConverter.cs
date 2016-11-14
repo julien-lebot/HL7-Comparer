@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace HL7Comparer
+namespace HL7Comparer.Converters
 {
     [ValueConversion(typeof(bool), typeof(string))]
     public class SourceChangedConverter : IValueConverter

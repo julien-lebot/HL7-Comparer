@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace HL7Comparer
+namespace HL7Comparer.Services
 {
     public class FileCacheService : ICacheService
     {

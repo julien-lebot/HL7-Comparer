@@ -1,10 +1,12 @@
 using System;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using HL7Comparer.Extensions;
+using HL7Comparer.Services;
 using ICSharpCode.AvalonEdit.Document;
 using ReactiveUI;
 
-namespace HL7Comparer
+namespace HL7Comparer.ViewModels
 {
     public class HL7EditorViewModel : ReactiveObject, IHL7Editor
     {

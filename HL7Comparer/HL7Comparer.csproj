@@ -116,36 +116,34 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="FileCacheService.cs" />
-    <Compile Include="Hl7ComponentViewModel.cs" />
-    <Compile Include="HL7Editor.xaml.cs">
+    <Compile Include="Services\FileCacheService.cs" />
+    <Compile Include="Views\HL7Editor.xaml.cs">
       <DependentUpon>HL7Editor.xaml</DependentUpon>
     </Compile>
-    <Compile Include="HL7EditorViewModel.cs" />
-    <Compile Include="Hl7GroupedComponentsViewModel.cs" />
-    <Compile Include="ICacheService.cs" />
-    <Compile Include="IHL7Editor.cs" />
-    <Compile Include="IMessagesComparer.cs" />
-    <Compile Include="IStorageFolder.cs" />
-    <Compile Include="IStorageService.cs" />
-    <Compile Include="ITextMarkerService.cs" />
-    <Compile Include="IUserPreferencesService.cs" />
-    <Compile Include="SimpleListEditor.xaml.cs">
+    <Compile Include="ViewModels\HL7EditorViewModel.cs" />
+    <Compile Include="Services\ICacheService.cs" />
+    <Compile Include="Services\IHL7Editor.cs" />
+    <Compile Include="Services\IMessagesComparer.cs" />
+    <Compile Include="Services\IStorageFolder.cs" />
+    <Compile Include="Services\IStorageService.cs" />
+    <Compile Include="Services\ITextMarkerService.cs" />
+    <Compile Include="Services\IUserPreferencesService.cs" />
+    <Compile Include="Views\SimpleListEditor.xaml.cs">
       <DependentUpon>SimpleListEditor.xaml</DependentUpon>
     </Compile>
-    <Compile Include="SourceChangedConverter.cs" />
-    <Compile Include="StorageFolder.cs" />
-    <Compile Include="StorageService.cs" />
-    <Compile Include="StringExtensions.cs" />
-    <Compile Include="StringViewModel.cs" />
-    <Compile Include="TextMarkerService.cs" />
-    <Compile Include="UserPreferencesService.cs" />
+    <Compile Include="Converters\SourceChangedConverter.cs" />
+    <Compile Include="Services\StorageFolder.cs" />
+    <Compile Include="Services\StorageService.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="ViewModels\StringViewModel.cs" />
+    <Compile Include="Services\TextMarkerService.cs" />
+    <Compile Include="Services\UserPreferencesService.cs" />
     <Compile Include="ViewModelInjector.cs" />
-    <Page Include="HL7Editor.xaml">
+    <Page Include="Views\HL7Editor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MainWindow.xaml">
+    <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -153,17 +151,17 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MainWindow.xaml.cs">
+    <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="SimpleListEditor.xaml">
+    <Page Include="Views\SimpleListEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MainWindowViewModel.cs" />
+    <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -191,6 +189,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="..\HL7.Comparer\HL7.Comparer.projitems" Label="Shared" />
   <Import Project="..\HL7.Model\HL7.Model.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

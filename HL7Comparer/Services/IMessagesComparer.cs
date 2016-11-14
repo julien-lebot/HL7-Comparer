@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace HL7Comparer
+namespace HL7Comparer.Services
 {
     public interface IMessagesComparer
     {

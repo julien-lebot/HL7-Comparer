@@ -1,6 +1,6 @@
 using System;
 
-namespace HL7Comparer
+namespace HL7Comparer.Extensions
 {
     public static class StringExtensions
     {

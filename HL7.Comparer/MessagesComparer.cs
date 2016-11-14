@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using HL7Comparer.Services;
 
 namespace HL7Comparer
 {

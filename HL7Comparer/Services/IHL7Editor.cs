@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using ICSharpCode.AvalonEdit.Document;
 using ReactiveUI;
 
-namespace HL7Comparer
+namespace HL7Comparer.Services
 {
     public interface IHL7Editor : IReactiveObject
     {

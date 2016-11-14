@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Windows.Media;
 
-namespace HL7Comparer
+namespace HL7Comparer.Services
 {
     [Flags]
     public enum TextMarkerTypes

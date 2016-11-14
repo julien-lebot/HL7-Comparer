@@ -1,18 +1,13 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reactive;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Text;
-using System.Threading;
 using System.Windows.Input;
+using HL7Comparer.Services;
 using ReactiveUI;
 
-namespace HL7Comparer
+namespace HL7Comparer.ViewModels
 {
     public class MainWindowViewModel : ReactiveObject
     {

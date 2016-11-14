@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Autofac;
 using Autofac.Core;
+using HL7Comparer.Services;
 
 namespace HL7Comparer
 {
@@ -58,7 +59,7 @@ namespace HL7Comparer
             {
                 try
                 {
-                    var viewModelTypeName = string.Format(CultureInfo.InvariantCulture, "{0}.{1}ViewModel, {2}", GetType().Namespace, viewType.Name, GetType().Assembly.FullName);
+                    var viewModelTypeName = string.Format(CultureInfo.InvariantCulture, "{0}.ViewModels.{1}ViewModel, {2}", GetType().Namespace, viewType.Name, GetType().Assembly.FullName);
                     var viewModelType = Type.GetType(viewModelTypeName);
                     return viewModelType;
                 }

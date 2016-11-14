@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="HL7Comparer.HL7Editor"
+﻿<UserControl x:Class="HL7Comparer.Views.HL7Editor"
              x:Name="Root"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"

@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace HL7Comparer
+namespace HL7Comparer.Services
 {
     public interface ICacheService
     {

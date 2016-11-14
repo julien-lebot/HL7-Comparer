@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace HL7Comparer
+namespace HL7Comparer.Services
 {
     public class StorageService : IStorageService
     {
