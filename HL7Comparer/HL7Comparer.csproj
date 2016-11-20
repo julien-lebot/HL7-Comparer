@@ -116,6 +116,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="IIndexedList.cs" />
     <Compile Include="Services\FileCacheService.cs" />
     <Compile Include="Views\HL7Editor.xaml.cs">
       <DependentUpon>HL7Editor.xaml</DependentUpon>

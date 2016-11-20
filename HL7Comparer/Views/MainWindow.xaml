@@ -9,9 +9,11 @@
         xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
         xmlns:converters="clr-namespace:HL7Comparer.Converters" 
         xmlns:views="clr-namespace:HL7Comparer.Views"
+        xmlns:viewModels="clr-namespace:HL7Comparer.ViewModels"
         mc:Ignorable="d"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         Background="{DynamicResource MaterialDesignPaper}"
+        WindowState="Maximized"
         TextElement.FontWeight="Regular"
         TextElement.FontSize="13"
         TextOptions.TextFormattingMode="Ideal" 
@@ -24,7 +26,7 @@
     <Window.Resources>
         <converters:SourceChangedConverter x:Key="SourceChangedConverter"></converters:SourceChangedConverter>
     </Window.Resources>
-    <materialDesign:DialogHost Identifier="RootDialog" SnackbarMessageQueue="{Binding ElementName=MainSnackbar, Path=MessageQueue}">
+    <materialDesign:DialogHost Identifier="RootDialog" SnackbarMessageQueue="{Binding ElementName=MainSnackbar, Path=MessageQueue}" IsOpen="False">
         <DockPanel>
             <ToolBarTray DockPanel.Dock="Top" Background="{DynamicResource PrimaryHueMidBrush}">
                 <ToolBarTray.Resources>
@@ -100,20 +102,20 @@
                     <Separator />
                     <Button Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}">
                         <Button.CommandParameter>
-                            <views:SimpleListEditor Title="IDS TO IGNORE"
+                            <views:SimpleListEditor Title="IGNORED IDS"
                                                     ItemsSource="{Binding IdsToIgnore}"
                                                     SaveCommand="{Binding SaveIdsCommand}"
                                                     DiscardCommand="{Binding DiscardIdsChangesCommand}"
                                                     AddItemCommand="{Binding AddItemCommand}"
                                                     DeleteItemCommand="{Binding DeleteIdCommand}">
                                 <views:SimpleListEditor.ItemTemplate>
-                                    <DataTemplate DataType="local:StringViewModel">
+                                    <DataTemplate DataType="viewModels:StringViewModel">
                                         <TextBox Text="{Binding Value, Mode=TwoWay}"></TextBox>
                                     </DataTemplate>
                                 </views:SimpleListEditor.ItemTemplate>
                             </views:SimpleListEditor>
                         </Button.CommandParameter>
-                        Edit Ids to ignore
+                        Ids to ignore
                     </Button>
                 </ToolBar>
             </ToolBarTray>
@@ -176,7 +178,7 @@
                     </GroupBox>
 
                 </Grid>
-                <materialDesign:Snackbar MessageQueue="{materialDesign:MessageQueue}" x:Name="MainSnackbar" />
+                <materialDesign:Snackbar MessageQueue="{Binding MessageQueue}" x:Name="MainSnackbar" />
             </Grid>
 
         </DockPanel>

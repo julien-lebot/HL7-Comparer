@@ -11,10 +11,10 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CompareUsing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Component.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Constants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Field.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IndexedList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Message.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)MessageExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RepeatedField.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Segment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SegmentExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Separators.cs" />

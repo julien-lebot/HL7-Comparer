@@ -83,11 +83,7 @@ namespace HL7Comparer.Views
         private void DiscardClicked(object sender, RoutedEventArgs e)
         {
             DialogHost.CloseDialogCommand.Execute(this, this);
-            // Bit of a hack really, but do that so that if
-            // the handler command executes synchronously
-            // the UI doesn't show the items source being
-            // reset.
-            Task.Run(() => DiscardCommand?.Execute(null));
+            DiscardCommand?.Execute(null);
         }
 
         private void SaveClicked(object sender, RoutedEventArgs e)

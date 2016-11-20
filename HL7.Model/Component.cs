@@ -6,18 +6,18 @@ namespace HL7Comparer
 {
     public class Component : IEquatable<Component>
     {
-        public Segment Segment { get; }
-        public int FieldIdx { get; }
-        public int ComponentIdx { get; }
-        public string Id => $"{Segment.Name}-{FieldIdx}.{ComponentIdx}";
-        public List<string> Values { get; } = new List<string>();
-
-        public Component(Segment segment, int fieldIdx, int componentIdx)
+        public Component(Segment parentSegment, int fieldIdx, int componentIdx)
         {
-            Segment = segment;
+            ParentSegment = parentSegment;
             FieldIdx = fieldIdx;
             ComponentIdx = componentIdx;
         }
+
+        public Segment ParentSegment { get; }
+        public int FieldIdx { get; }
+        public int ComponentIdx { get; }
+        public string Id => $"{ParentSegment.Name}-{FieldIdx}.{ComponentIdx}";
+        public List<string> Values { get; } = new List<string>();
 
         public bool Equals(Component other)
         {

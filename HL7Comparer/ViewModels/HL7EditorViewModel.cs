@@ -11,12 +11,26 @@ namespace HL7Comparer.ViewModels
     public class HL7EditorViewModel : ReactiveObject, IHL7Editor
     {
         private readonly ICacheService _cacheService;
-        private Message _HL7Message;
         private readonly TextDocument _document = new TextDocument();
+        private Message _HL7Message;
         private bool _isModified;
 
+        public HL7EditorViewModel(ICacheService cacheService)
+        {
+            _cacheService = cacheService;
+            Observable.FromEventPattern<EventHandler<TextChangeEventArgs>, TextChangeEventArgs>(
+                h => Document.TextChanged += h,
+                h => Document.TextChanged -= h)
+            .Subscribe(
+                _ =>
+                {
+                    HL7Message = Message.Parse(Document.Text);
+                    IsModified = true;
+                });
+        }
+
         private ITextMarkerService TextMarkerService
-            => (ITextMarkerService) Document.GetService(typeof(ITextMarkerService));
+            => (ITextMarkerService)Document.GetService(typeof(ITextMarkerService));
 
         public IDocument Document => _document;
 
@@ -32,28 +46,25 @@ namespace HL7Comparer.ViewModels
             set { this.RaiseAndSetIfChanged(ref _isModified, value); }
         }
 
-        public HL7EditorViewModel(ICacheService cacheService)
-        {
-            _cacheService = cacheService;
-            var textChanged =
-                Observable.FromEventPattern<EventHandler<TextChangeEventArgs>, TextChangeEventArgs>(
-                    h => Document.TextChanged += h,
-                    h => Document.TextChanged -= h);
-            textChanged
-                .Subscribe(
-                    _ =>
-                    {
-                        HL7Message = Message.Parse(Document.Text);
-                        IsModified = true;
-                    });
-        }
-
         public void AddHL7ComponentMarker(Component component, string message)
         {
-            var srcLine = Document.GetLineByNumber(component.Segment.LineNumber);
+            var isMsh = component.ParentSegment.Name == "MSH";
+            var srcLine = Document.GetLineByNumber(component.ParentSegment.LineNumber);
             var srcLineText = Document.GetText(srcLine.Offset, srcLine.TotalLength);
-            var indexOfSourceField = srcLineText.IndexOfNth(c => c == Constants.FieldSeparator, component.FieldIdx) + 1;
-            var sourceFieldLength = srcLineText.IndexOf(Constants.FieldSeparator, indexOfSourceField) - indexOfSourceField;
+            var indexOfSourceField =
+                srcLineText.IndexOfNth(c => c == HL7Message.DefaultSeparator[Separators.FieldSeparator],
+                     isMsh? component.FieldIdx - 1 : component.FieldIdx);
+            if (!isMsh || component.FieldIdx != 1)
+            {
+                indexOfSourceField++;
+            }
+            if (indexOfSourceField < 0)
+            {
+                indexOfSourceField = 0;
+            }
+            var sourceFieldLength =
+                srcLineText.IndexOf(HL7Message.DefaultSeparator[Separators.FieldSeparator], indexOfSourceField) -
+                indexOfSourceField;
             if (sourceFieldLength <= 0)
             {
                 sourceFieldLength = 1;

@@ -5,20 +5,129 @@ using System.Reactive.Linq;
 using System.Text;
 using System.Windows.Input;
 using HL7Comparer.Services;
+using MaterialDesignThemes.Wpf;
 using ReactiveUI;
 
 namespace HL7Comparer.ViewModels
 {
     public class MainWindowViewModel : ReactiveObject
     {
-        private readonly IUserPreferencesService _userPreferencesService;
         private readonly ReactiveList<IDifference> _differences = new ReactiveList<IDifference>();
-        private ReactiveList<StringViewModel> _idsToIgnore = new ReactiveList<StringViewModel>();
         private readonly ObservableAsPropertyHelper<int> _differencesCount;
-        private bool _displayLineNumber;
+        private readonly IUserPreferencesService _userPreferencesService;
         private string _differencesAsText;
+        private bool _displayLineNumber;
+        private ReactiveList<StringViewModel> _idsToIgnore = new ReactiveList<StringViewModel>();
 
-        private ICommand CompareHL7MessageCommand { get; }
+        public MainWindowViewModel(IHL7Editor leftHl7Editor,
+            IHL7Editor rightHl7Editor,
+            IUserPreferencesService userPreferencesService,
+            IMessagesComparer messagesComparer,
+            ISnackbarMessageQueue messageQueue)
+        {
+            _userPreferencesService = userPreferencesService;
+            MessageQueue = messageQueue;
+            LeftHL7Editor = leftHl7Editor;
+            RightHL7Editor = rightHl7Editor;
+            LeftHL7Editor.LoadFromCache("LeftEditorCache");
+            RightHL7Editor.LoadFromCache("RightEditorCache");
+
+            Observable.FromEventPattern(
+                h => _userPreferencesService.PreferencesSaved += h,
+                h => _userPreferencesService.PreferencesSaved -= h)
+                .Subscribe(_ => MessageQueue.Enqueue("Settings saved"));
+
+            SaveIdsCommand = ReactiveCommand.Create<object>(_ =>
+            {
+                _userPreferencesService.Set("IdsToIgnore", _idsToIgnore.Select(s => s.Value).ToList());
+            });
+            SaveIdsCommand.ThrownExceptions.Subscribe(ex => MessageQueue.Enqueue(ex.ToString()));
+
+            DeleteIdCommand = ReactiveCommand.Create<StringViewModel>(s => { IdsToIgnore.Remove(s); });
+            DeleteIdCommand.ThrownExceptions.Subscribe(ex => MessageQueue.Enqueue(ex.ToString()));
+
+            AddItemCommand = ReactiveCommand.Create<object>(_ => { IdsToIgnore.Add(new StringViewModel(string.Empty)); });
+            AddItemCommand.ThrownExceptions.Subscribe(ex => MessageQueue.Enqueue(ex.ToString()));
+
+            DiscardIdsChangesCommand = ReactiveCommand.Create<object>(_ => { LoadIdsToIgnore(); });
+            DiscardIdsChangesCommand.ThrownExceptions.Subscribe(ex => MessageQueue.Enqueue(ex.ToString()));
+
+            var whenMessagesChanged =
+                this.WhenAnyValue(vm => vm.LeftHL7Editor.HL7Message, vm => vm.RightHL7Editor.HL7Message);
+
+            var canCompareMessages =
+                whenMessagesChanged
+                    .Select(msgs => msgs.Item1 != null && msgs.Item1.Segments.Any() &&
+                                    msgs.Item2 != null && msgs.Item2.Segments.Any());
+
+            CompareHL7MessageCommand = ReactiveCommand.Create<object>(_ =>
+            {
+                using (_differences.SuppressChangeNotifications())
+                {
+                    _differences.Clear();
+                    _differences.AddRange(messagesComparer.Compare(LeftHL7Editor.HL7Message,
+                        RightHL7Editor.HL7Message,
+                        _idsToIgnore.Select(s => s.Value).ToList()));
+                }
+            }, canCompareMessages);
+            CompareHL7MessageCommand.ThrownExceptions.Subscribe(ex => MessageQueue.Enqueue(ex.ToString()));
+            SaveIdsCommand.IsExecuting.Where(x => x).InvokeCommand(CompareHL7MessageCommand);
+            whenMessagesChanged.InvokeCommand(CompareHL7MessageCommand);
+
+            _differencesCount = Differences.CountChanged.ToProperty(this, vm => vm.DifferencesCount);
+            Differences.Changed.Subscribe(x => UpdateDifferences());
+
+            LoadPreferences();
+            this.WhenAnyValue(vm => vm.DisplayLineNumber)
+                .Skip(1)
+                .Subscribe(value =>
+                {
+                    _userPreferencesService.Set("DisplayLineNumber", value);
+                });
+        }
+
+        private void UpdateDifferences()
+        {
+            LeftHL7Editor.ClearMarkers();
+            RightHL7Editor.ClearMarkers();
+
+            var differencesBuilder = new StringBuilder();
+            foreach (var diff in Differences)
+            {
+                var msg = string.Empty;
+                if (diff is ComponentValueDifference)
+                {
+                    var cvd = diff as ComponentValueDifference;
+                    LeftHL7Editor.AddHL7ComponentMarker(cvd.Source, cvd.AsText());
+                    RightHL7Editor.AddHL7ComponentMarker(cvd.Target, cvd.AsText());
+                    msg = cvd.AsText();
+                }
+                else if (diff is MissingComponentDifference)
+                {
+                    var mcd = diff as MissingComponentDifference;
+                    var location = mcd.DifferenceLocation == DifferenceLocation.Target
+                        ? "Source"
+                        : "Destination";
+                    msg = $"At line {mcd.Source.ParentSegment.LineNumber} in {location}: {mcd.AsText()}";
+                    RightHL7Editor.AddHL7ComponentMarker(mcd.Source, mcd.AsText());
+                    LeftHL7Editor.AddHL7ComponentMarker(mcd.Source, mcd.AsText());
+                }
+                else if (diff is MissingSegmentDifference)
+                {
+                    var msd = diff as MissingSegmentDifference;
+                    var location = msd.MissingSegmentDifferenceLocation == DifferenceLocation.Target
+                        ? "Source"
+                        : "Destination";
+                    msg = $"At line {msd.MissingSegment.LineNumber} in {location}: {msd.AsText()}";
+                }
+                differencesBuilder.AppendLine(msg);
+            }
+            DifferencesAsText = differencesBuilder.ToString();
+            LeftHL7Editor.SaveInCache("LeftEditorCache");
+            RightHL7Editor.SaveInCache("RightEditorCache");
+        }
+
+        private ReactiveCommand CompareHL7MessageCommand { get; }
 
         public IHL7Editor LeftHL7Editor { get; }
         public IHL7Editor RightHL7Editor { get; }
@@ -36,11 +145,7 @@ namespace HL7Comparer.ViewModels
         public bool DisplayLineNumber
         {
             get { return _displayLineNumber; }
-            set
-            {
-                this.RaiseAndSetIfChanged(ref _displayLineNumber, value);
-                _userPreferencesService.Set("DisplayLineNumber", value);
-            }
+            set { this.RaiseAndSetIfChanged(ref _displayLineNumber, value); }
         }
 
         public ReactiveList<StringViewModel> IdsToIgnore
@@ -49,10 +154,12 @@ namespace HL7Comparer.ViewModels
             set { this.RaiseAndSetIfChanged(ref _idsToIgnore, value); }
         }
 
-        public ICommand SaveIdsCommand { get; }
-        public ICommand DiscardIdsChangesCommand { get; }
-        public ICommand DeleteIdCommand { get; }
-        public ICommand AddItemCommand { get; }
+        public ReactiveCommand SaveIdsCommand { get; }
+        public ReactiveCommand DiscardIdsChangesCommand { get; }
+        public ReactiveCommand DeleteIdCommand { get; }
+        public ReactiveCommand AddItemCommand { get; }
+
+        public ISnackbarMessageQueue MessageQueue { get; }
 
         private void LoadPreferences()
         {
@@ -70,8 +177,8 @@ namespace HL7Comparer.ViewModels
                     _idsToIgnore.Clear();
                     _idsToIgnore.AddRange(new[]
                     {
-                        "MSH-6.1", // DateTime
-                        "MSH-9.1", // ControlID
+                        "MSH-7.1", // DateTime
+                        "MSH-10.1", // ControlID
 
                         "OBR-7.1", // DateTime
                         "OBR-13.1", // NeuronID
@@ -90,95 +197,6 @@ namespace HL7Comparer.ViewModels
                     _idsToIgnore.AddRange(idsToIgnore.Select(s => new StringViewModel(s)));
                 }
             }
-        }
-
-        public MainWindowViewModel(IHL7Editor leftHl7Editor, IHL7Editor rightHl7Editor, IUserPreferencesService userPreferencesService, IMessagesComparer messagesComparer)
-        {
-            _userPreferencesService = userPreferencesService;
-            LeftHL7Editor = leftHl7Editor;
-            RightHL7Editor = rightHl7Editor;
-            LeftHL7Editor.LoadFromCache("LeftEditorCache");
-            RightHL7Editor.LoadFromCache("RightEditorCache");
-
-            SaveIdsCommand = ReactiveCommand.Create<object>(_ =>
-            {
-                _userPreferencesService.Set("IdsToIgnore", _idsToIgnore.Select(s => s.Value).ToList());
-                if (CompareHL7MessageCommand.CanExecute(null))
-                {
-                    CompareHL7MessageCommand.Execute(null);
-                }
-            });
-
-            DeleteIdCommand = ReactiveCommand.Create<StringViewModel>(s =>
-            {
-                IdsToIgnore.Remove(s);
-            });
-
-            AddItemCommand = ReactiveCommand.Create<object>(_ =>
-            {
-                IdsToIgnore.Add(new StringViewModel(string.Empty));
-            });
-
-            DiscardIdsChangesCommand = ReactiveCommand.Create<object>(_ =>
-            {
-                LoadIdsToIgnore();
-            });
-
-            CompareHL7MessageCommand = ReactiveCommand.Create<object>(_ =>
-            {
-                using (_differences.SuppressChangeNotifications())
-                {
-                    _differences.Clear();
-                    _differences.AddRange(messagesComparer.Compare(LeftHL7Editor.HL7Message, RightHL7Editor.HL7Message, _idsToIgnore.Select(s => s.Value).ToList()));
-                }
-            },
-            this.WhenAnyValue(vm => vm.LeftHL7Editor.HL7Message, vm => vm.RightHL7Editor.HL7Message)
-                .Select(msgs => msgs.Item1 != null && msgs.Item1.Segments.Any() &&
-                                msgs.Item2 != null && msgs.Item2.Segments.Any()));
-
-            this.WhenAnyValue(vm => vm.LeftHL7Editor.HL7Message, vm => vm.RightHL7Editor.HL7Message)
-                .InvokeCommand(CompareHL7MessageCommand);
-
-            _differencesCount = Differences.CountChanged.ToProperty(this, vm => vm.DifferencesCount);
-            Differences.Changed
-                       .Subscribe(x =>
-                       {
-                           LeftHL7Editor.ClearMarkers();
-                           RightHL7Editor.ClearMarkers();
-
-                           var differencesBuilder = new StringBuilder();
-                           foreach (var diff in Differences)
-                           {
-                               string msg = string.Empty;
-                               if (diff is ComponentValueDifference)
-                               {
-                                   var cvd = diff as ComponentValueDifference;
-                                   LeftHL7Editor.AddHL7ComponentMarker(cvd.Source, cvd.AsText());
-                                   RightHL7Editor.AddHL7ComponentMarker(cvd.Target, cvd.AsText());
-                                   msg = cvd.AsText();
-                               }
-                               else if (diff is MissingComponentDifference)
-                               {
-                                   var mcd = diff as MissingComponentDifference;
-                                   var location = mcd.DifferenceLocation == DifferenceLocation.Target ? "Source" : "Destination";
-                                   msg = $"At line {(mcd.Source.Segment.LineNumber)} in {location}: {mcd.AsText()}";
-                                   RightHL7Editor.AddHL7ComponentMarker(mcd.Source, mcd.AsText());
-                                   LeftHL7Editor.AddHL7ComponentMarker(mcd.Source, mcd.AsText());
-
-                               }
-                               else if (diff is MissingSegmentDifference)
-                               {
-                                   var msd = diff as MissingSegmentDifference;
-                                   var location = msd.MissingSegmentDifferenceLocation == DifferenceLocation.Target ? "Source" : "Destination";
-                                   msg = $"At line {msd.MissingSegment.LineNumber} in {location}: {msd.AsText()}";
-                               }
-                               differencesBuilder.AppendLine(msg);
-                           }
-                           DifferencesAsText = differencesBuilder.ToString();
-                           LeftHL7Editor.SaveInCache("LeftEditorCache");
-                           RightHL7Editor.SaveInCache("RightEditorCache");
-                       });
-            LoadPreferences();
         }
     }
 }

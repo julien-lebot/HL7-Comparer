@@ -7,7 +7,7 @@ namespace HL7Comparer
     {
         public static bool IsObx(this Segment segment)
         {
-            return segment.Name == "OBX";
+            return segment.Name == "OBX" || segment.Name == "ZCD";
         }
 
         public static IEnumerable<Segment> QueryObxSegments(this IEnumerable<Segment> segments)
@@ -21,7 +21,7 @@ namespace HL7Comparer
             {
                 return string.Empty;
             }
-            return obxSegment.Fields[3].Components[1].ToString();
+            return obxSegment.Fields[3].RepeatedFields[1].Components[1].ToString();
         }
     }
 }

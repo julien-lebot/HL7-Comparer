@@ -1,21 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
 using System.Globalization;
-using System.Linq;
 using System.Reactive.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
 using System.Windows;
 using Autofac;
 using Autofac.Core;
 using HL7Comparer.Services;
+using MaterialDesignThemes.Wpf;
 
 namespace HL7Comparer
 {
     /// <summary>
-    /// Interaction logic for App.xaml
+    ///     Interaction logic for App.xaml
     /// </summary>
     public partial class App : Application
     {
@@ -28,9 +23,9 @@ namespace HL7Comparer
             cb.RegisterType<FileCacheService>()
                 .As<ICacheService>()
                 .WithParameter(new ResolvedParameter(
-                    (pi, ctx) => pi.ParameterType == typeof(IStorageFolder) && pi.Name == "storageFolder",
+                    (pi, ctx) => pi.ParameterType == typeof (IStorageFolder) && pi.Name == "storageFolder",
                     (pi, ctx) => ctx.Resolve<IStorageService>().GetApplicationDataFolder()))
-               .SingleInstance();
+                .SingleInstance();
 
             cb.RegisterType<StorageService>()
                 .As<IStorageService>()
@@ -39,13 +34,15 @@ namespace HL7Comparer
             cb.RegisterType<UserPreferencesService>()
                 .As<IUserPreferencesService>()
                 .WithParameter(new ResolvedParameter(
-                    (pi, ctx) => pi.ParameterType == typeof(IStorageFolder) && pi.Name == "storageFolder",
+                    (pi, ctx) => pi.ParameterType == typeof (IStorageFolder) && pi.Name == "storageFolder",
                     (pi, ctx) => ctx.Resolve<IStorageService>().GetApplicationDataFolder()))
                 .SingleInstance();
 
             cb.RegisterType<MessagesComparer>()
                 .As<IMessagesComparer>()
                 .SingleInstance();
+
+            cb.RegisterType<SnackbarMessageQueue>().As<ISnackbarMessageQueue>().InstancePerDependency();
 
             cb.RegisterAssemblyTypes(GetType().Assembly)
                 .Where(t => t.Name.EndsWith("ViewModel"))
@@ -55,17 +52,20 @@ namespace HL7Comparer
 
             _container = cb.Build();
 
-            ViewModelInjector.SetDefaultViewTypeToViewModelTypeResolver((viewType) =>
+            ViewModelInjector.SetDefaultViewTypeToViewModelTypeResolver(viewType =>
             {
                 try
                 {
-                    var viewModelTypeName = string.Format(CultureInfo.InvariantCulture, "{0}.ViewModels.{1}ViewModel, {2}", GetType().Namespace, viewType.Name, GetType().Assembly.FullName);
+                    var viewModelTypeName = string.Format(CultureInfo.InvariantCulture,
+                        "{0}.ViewModels.{1}ViewModel, {2}",
+                        GetType().Namespace,
+                        viewType.Name,
+                        GetType().Assembly.FullName);
                     var viewModelType = Type.GetType(viewModelTypeName);
                     return viewModelType;
                 }
                 catch (Exception ex)
                 {
-
                 }
                 return null;
             });
